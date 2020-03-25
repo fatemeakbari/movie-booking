@@ -1,20 +1,19 @@
 package com.example.moviebooking.Controller;
 
-import com.example.moviebooking.repository.entity.User;
-import com.example.moviebooking.repository.entity.VerificationToken;
+import com.example.moviebooking.config.security.AuthenticationFacade;
+import com.example.moviebooking.repository.entity.authentication.User;
+import com.example.moviebooking.repository.entity.authentication.VerificationToken;
 import com.example.moviebooking.service.UserService;
-import com.example.moviebooking.service.event.RegistrationEvent;
-import com.example.moviebooking.service.event.ResetForgottenPasswordEvent;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.util.Calendar;
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import java.security.Principal;
+
 
 @RestController
 @RequestMapping("/users")
@@ -27,9 +26,40 @@ public class UserController {
     @Autowired
     ApplicationEventPublisher eventPublisher;
 
+    @Autowired
+    AuthenticationFacade authenticationFacade;
 
+    @GetMapping("/welcome")
+    public String welcome(){
+        return "welcome user";
+    }
 
+    @GetMapping("/username")
+    public String getUser(Authentication authentication){
+    System.out.println("-------------"+
+        authentication.getCredentials());
+        return authentication.getName();
+    }
 
+    @GetMapping("/username2")
+    public String getUser2(Principal principal){
+        return principal.getName();
+    }
+
+    @GetMapping("/username3")
+    public String getUser3(HttpServletRequest request){
+        return request.getUserPrincipal().getName();
+    }
+
+    @GetMapping("/username4")
+    public String getUser4(){
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    @GetMapping("/username5")
+    public String getUser5(){
+        return authenticationFacade.getAuthentication().getName();
+    }
     @GetMapping("/reset-forgotten-password/")
     public void resetPassword(@RequestParam String token)
     {
@@ -38,39 +68,23 @@ public class UserController {
 
     }
 
-    @PutMapping
-    public User update(@RequestBody @Valid User user){
-        return userService.save(user);
+    @PutMapping("/{username}/change-password")
+    public void changePassword(@PathVariable String username,@RequestParam String oldPassword, @RequestParam String newPassword)
+    {
+        User user = userService.findByUsername(username);
+        if (user.getPassword() != oldPassword){
+            throw new IllegalArgumentException("password is incorrect!");
+        }
+        user.setPassword(newPassword);
+        userService.update(user);
     }
 
-    @GetMapping("/{id}")
-    public User findById(@PathVariable Long id){
-        return userService.findById(id);
-    }
-
-    @GetMapping("/username/{username}")
-    public User findByUsername(@PathVariable String username){
+    @GetMapping("/view-profile")
+    public User viewProfile(@RequestParam String username)
+    {
         return userService.findByUsername(username);
     }
 
-    @GetMapping("/email/{email}")
-    public User findByEmail(@PathVariable String email){
-        return userService.findByEmail(email);
-    }
 
-    @GetMapping
-    public List<User> findAll(){
-        return userService.findAll();
-    }
-
-    @GetMapping("/paging")
-    public Page<User> findAllByPaging(Pageable pageable){
-        return userService.findAllByPaging(pageable);
-    }
-
-    @DeleteMapping("/{id}")
-    public void deleteById(@PathVariable Long id){
-        userService.deleteById(id);
-    }
 
 }

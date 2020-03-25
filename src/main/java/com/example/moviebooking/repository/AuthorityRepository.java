@@ -1,7 +1,6 @@
 package com.example.moviebooking.repository;
 
-import com.example.moviebooking.repository.entity.Authority;
-import com.example.moviebooking.repository.entity.User;
+import com.example.moviebooking.repository.entity.authentication.Authority;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;

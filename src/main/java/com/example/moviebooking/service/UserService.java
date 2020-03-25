@@ -3,9 +3,9 @@ package com.example.moviebooking.service;
 import com.example.moviebooking.repository.AuthorityRepository;
 import com.example.moviebooking.repository.VerificationTokenRepository;
 import com.example.moviebooking.repository.UserRepository;
-import com.example.moviebooking.repository.entity.Authority;
-import com.example.moviebooking.repository.entity.User;
-import com.example.moviebooking.repository.entity.VerificationToken;
+import com.example.moviebooking.repository.entity.authentication.Authority;
+import com.example.moviebooking.repository.entity.authentication.User;
+import com.example.moviebooking.repository.entity.authentication.VerificationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -111,6 +111,25 @@ public class UserService {
         }
     }
 
+    public User findByUsernameAndPassword(String username, String password)
+    {
+        try{
+            return userRepository.findByUsernameAndPassword(username,password);
+        }
+        catch (Exception ex){
+            throw new EntityNotFoundException(String.format("User not found with username: %s and password: %s", username,password));
+        }
+    }
+
+    public User findByEmailAndPassword(String email, String password){
+        try{
+            return userRepository.findByEmailAndPassword(email,password);
+        }
+        catch (Exception ex){
+            throw new EntityNotFoundException(String.format("User not found with email: %s and password: %s", email,password));
+        }
+    }
+
     public Page<User> findAllByPaging(Pageable pageable){
        return userRepository.findAll(pageable);
     }
@@ -150,5 +169,9 @@ public class UserService {
         verificationTokenRepository.deleteByUserId(userId);
     }
 
+
+    public User findByUsernameOrEmail(String usernameOrEmail) {
+        return userRepository.findByUsernameOrEmail(usernameOrEmail);
+    }
 
 }

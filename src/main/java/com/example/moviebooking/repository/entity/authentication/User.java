@@ -1,11 +1,10 @@
-package com.example.moviebooking.repository.entity;
+package com.example.moviebooking.repository.entity.authentication;
 
 import com.example.moviebooking.config.validator.ValidEmail;
 import com.example.moviebooking.config.validator.ValidPhoneNumber;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.util.Date;

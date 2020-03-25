@@ -1,16 +1,14 @@
-package com.example.moviebooking.service.event;
+package com.example.moviebooking.service.listener.event;
 
-import com.example.moviebooking.repository.entity.User;
+import com.example.moviebooking.repository.entity.authentication.User;
 import org.springframework.context.ApplicationEvent;
 
-
-@SuppressWarnings("serial")
-public class RegistrationEvent extends ApplicationEvent {
+public class ResetForgottenPasswordEvent extends ApplicationEvent {
 
     private User user;
 
 
-    public RegistrationEvent(User user) {
+    public ResetForgottenPasswordEvent(User user) {
         super(user);
         this.user = user;
     }

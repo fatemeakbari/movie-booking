@@ -1,7 +1,7 @@
 package com.example.moviebooking.service;
 
 import com.example.moviebooking.repository.AuthorityRepository;
-import com.example.moviebooking.repository.entity.Authority;
+import com.example.moviebooking.repository.entity.authentication.Authority;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

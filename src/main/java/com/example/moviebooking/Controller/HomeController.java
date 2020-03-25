@@ -1,10 +1,10 @@
 package com.example.moviebooking.Controller;
 
-import com.example.moviebooking.repository.entity.User;
-import com.example.moviebooking.repository.entity.VerificationToken;
+import com.example.moviebooking.repository.entity.authentication.User;
+import com.example.moviebooking.repository.entity.authentication.VerificationToken;
 import com.example.moviebooking.service.UserService;
-import com.example.moviebooking.service.event.RegistrationEvent;
-import com.example.moviebooking.service.event.ResetForgottenPasswordEvent;
+import com.example.moviebooking.service.listener.event.RegistrationEvent;
+import com.example.moviebooking.service.listener.event.ResetForgottenPasswordEvent;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -58,11 +58,7 @@ public class HomeController {
         }
     }
 
-    @PostMapping("/login")
-    public User login(@RequestParam String usernameORemail, @RequestParam String password){
 
-        return null;
-    }
     @GetMapping("/forget-password")
     public void forgetPassword(@RequestParam String email){
         User user = userService.findByEmail(email);

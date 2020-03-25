@@ -1,7 +1,8 @@
-package com.example.moviebooking.service.event;
+package com.example.moviebooking.service.listener;
 
-import com.example.moviebooking.repository.entity.VerificationToken;
+import com.example.moviebooking.repository.entity.authentication.VerificationToken;
 import com.example.moviebooking.service.UserService;
+import com.example.moviebooking.service.listener.event.RegistrationEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.mail.SimpleMailMessage;

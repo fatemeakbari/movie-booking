@@ -1,6 +1,6 @@
 package com.example.moviebooking.repository;
 
-import com.example.moviebooking.repository.entity.VerificationToken;
+import com.example.moviebooking.repository.entity.authentication.VerificationToken;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 public interface VerificationTokenRepository extends PagingAndSortingRepository<VerificationToken,Long> {

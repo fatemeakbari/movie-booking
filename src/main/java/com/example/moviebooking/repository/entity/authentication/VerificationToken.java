@@ -1,5 +1,6 @@
-package com.example.moviebooking.repository.entity;
+package com.example.moviebooking.repository.entity.authentication;
 
+import com.example.moviebooking.repository.entity.authentication.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;

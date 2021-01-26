@@ -11,6 +11,6 @@ public class PhoneNumberValidator implements ConstraintValidator<ValidPhoneNumbe
 
     @Override
     public boolean isValid(String phoneNumber, ConstraintValidatorContext constraintValidatorContext) {
-        return phoneNumber.length() == 11 && phoneNumber.startsWith("09");
+        return phoneNumber.length() >= 7;
     }
 }

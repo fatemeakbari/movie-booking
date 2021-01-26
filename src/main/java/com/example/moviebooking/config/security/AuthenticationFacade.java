@@ -11,4 +11,5 @@ public class AuthenticationFacade {
     {
         return SecurityContextHolder.getContext().getAuthentication();
     }
+    public String getUsername(){ return getAuthentication().getName();}
 }

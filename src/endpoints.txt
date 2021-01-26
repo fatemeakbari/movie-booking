@@ -1,0 +1,38 @@
+-Admin
+    - Film Admin Controller
+        1- enter new film -> FilmRequestDto
+        2- update film by id -> id, FilmRequestDto
+        3- get by id ->  FilmWithPerformanceResponseDto
+        4- delete by id -> id
+        6- find all released film -> FilmsEventResponseDto
+        7- find all archive order by production date -> FilmsArchiveResponseDto
+        8- upload images by id
+        9- remove uploaded images
+        10- upload teaser by id
+        11- remove teaser by id
+
+    - Place Admin Controller
+        1- enter new place -> PlaceRequestDto
+        2- update place by id -> id, PlaceRequestDto
+        3- get by id -> PlaceWithHallsAndPerformanceResponseDto
+        4- get all -> PlacesResponseDto
+        5- delete by id -> id
+
+        - Hall Admin Controller
+            1- enter new Hall -> HallRequestDto
+            2- enter list of new Hall -> list<HallRequestDto>
+            3- get by id -> HallResponseDto
+            4- get by id and with seat -> Hall
+            5- get by place id -> HallResponseDto
+            6- delete by id
+
+-Public
+    - Public Film Controller
+        1- find all released film -> FilmsEventResponseDto
+        2- find all archive order by production date -> FilmsArchiveResponseDto
+        3- get details of film -> FilmWithPerformanceResponseDto
+        4- search by name -> FilmWithPerformanceResponseDto
+        5- rate to the film -> mediaId, rate
+        6- comment by film id -> filmId, CommentRequestDto
+        7- like comment by commentId -> commentId
+        8- find comments associated to film -> CommentResponseDto

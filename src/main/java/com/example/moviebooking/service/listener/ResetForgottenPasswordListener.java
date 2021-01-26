@@ -1,8 +1,8 @@
 package com.example.moviebooking.service.listener;
 
-import com.example.moviebooking.repository.entity.authentication.User;
-import com.example.moviebooking.repository.entity.authentication.VerificationToken;
-import com.example.moviebooking.service.UserService;
+import com.example.moviebooking.entity.userInfo.User;
+import com.example.moviebooking.entity.userInfo.VerificationToken;
+import com.example.moviebooking.service.authentication.UserService;
 import com.example.moviebooking.service.listener.event.ResetForgottenPasswordEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;

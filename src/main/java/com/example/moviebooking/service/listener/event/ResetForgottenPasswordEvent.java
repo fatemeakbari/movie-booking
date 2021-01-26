@@ -1,6 +1,6 @@
 package com.example.moviebooking.service.listener.event;
 
-import com.example.moviebooking.repository.entity.authentication.User;
+import com.example.moviebooking.entity.userInfo.User;
 import org.springframework.context.ApplicationEvent;
 
 public class ResetForgottenPasswordEvent extends ApplicationEvent {

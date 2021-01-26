@@ -1,15 +1,28 @@
 package com.example.moviebooking.service.media;
 
-import com.example.moviebooking.repository.MediaShowingPlaceRepository;
-import com.example.moviebooking.repository.entity.Media.Film;
-import com.example.moviebooking.repository.entity.MediaShowingPlace;
-import com.example.moviebooking.repository.mediaRepository.FilmRepository;
+import com.example.moviebooking.entity.media.MediaComment;
+import com.example.moviebooking.repository.PerformanceRepository;
+import com.example.moviebooking.entity.media.Film;
+import com.example.moviebooking.entity.media.Media;
+import com.example.moviebooking.entity.media.MediaRate;
+import com.example.moviebooking.entity.userInfo.User;
+import com.example.moviebooking.repository.media.FilmRepository;
+import com.example.moviebooking.service.CommentService;
+import com.example.moviebooking.service.RateService;
+import com.example.moviebooking.service.UtilService;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.persistence.EntityNotFoundException;
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.List;
 
 @Service
 public class FilmService {
@@ -18,43 +31,174 @@ public class FilmService {
     private FilmRepository filmRepository;
 
     @Autowired
-    private MediaShowingPlaceRepository mediaShowingPlaceRepository;
+    UtilService utilService;
 
-    public Page<Film> findAll(Pageable pageable){
-        return filmRepository.findAll(pageable);
+
+    @Autowired
+    private RateService rateService;
+
+    @Autowired
+    private CommentService commentService;
+
+    @Autowired
+    private Environment env;
+
+    @Autowired
+    private PerformanceRepository performanceRepository;
+
+
+    public Film save(Film film){
+        film.setTehranTotalSale(0d);
+        film.setTownshipTotalSale(0d);
+        try{
+            return filmRepository.save(film);
+        }
+        catch (DataIntegrityViolationException ex){
+            if(ex.getMessage().contains("unique_name")){
+                throw new DataIntegrityViolationException("The name of film must be unique");
+            }
+            throw new DataIntegrityViolationException("Please insert valid information "+ex.getMessage());
+        }
+    }
+
+    public Film update(Long id, Film film){
+        if (findById(id) != null) {
+          film.setId(id);
+          return filmRepository.save(film);
+        }
+        return null;
+    }
+
+    public Page<Film> findAllByOrderByProductionDate(Pageable pageable){
+        return filmRepository.findAllByOrderByProductionDate(pageable);
     }
 
 
     public Film findById(Long id){
-        return filmRepository.findById(id).get();
+        try{
+            Film film = filmRepository.findById(id).get();
+            float rate = rateService.findAverageByForeignId(film.getId());
+            film.setRate(rate);
+            return film;
+        }
+        catch (Exception ex){
+            throw new EntityNotFoundException("Not Found film with id: "+id);
+        }
+    }
+
+    public Page<Film> findAllByReleasesTrue(Pageable pageable){
+        return filmRepository.findAllByReleasedTrue(pageable);
+    }
+
+    public Page<Film> findAllByReleasedFalseOrderByProductionDate(Pageable pageable){
+        return filmRepository.findAllByReleasedFalseOrderByProductionDate(pageable);
+    }
+
+    public List<Film> findByNameLike(String name){
+        return filmRepository.findByNameLike(name);
     }
 
 
-    public Page<Film> findByName(Pageable pageable,String name){
-        return filmRepository.findByName(pageable,name);
+    public Float ratedAndFindNewRate(Long id, Long userId, Integer rate){
+        MediaRate mediaRate=  new MediaRate();
+        mediaRate.setMedia(new Media(id));
+        mediaRate.setUser(new User(userId));
+        mediaRate.setRate(rate);
+        rateService.save(mediaRate);
+        return rateService.findAverageByForeignId(mediaRate.getMedia().getId());
     }
 
-    public Page<Film> findByCategory(Pageable pageable,String category){
-        return filmRepository.findByCategory(pageable,category);
+//    public void addCommentById(Long id, MediaComment comment){
+//
+//        Media media = new Media(id);
+//        comment.setMedia(media);
+//        commentService.save(comment);
+//    }
+//
+//    public void likeCommentByCommentId(Long commentId){
+//        commentService.likeById(commentId);
+//    }
+//
+//    public Page<MediaComment> findCommentById(Pageable pageable, Long id){
+//        return commentService.findByForeignId(pageable, id);
+//    }
+
+    public void deleteById(Long id){
+
+        try{
+            filmRepository.deleteById(id);
+            deleteUploadedImagesById(id);
+            deleteUploadedTrailerById(id);
+        }
+        catch (Exception ex){
+            throw new IllegalArgumentException("The film with id: "+id+" not exist!");
+        }
     }
 
-    public Page<Film> findByDirector(Pageable pageable,String director){
-        return filmRepository.findByDirector(pageable,director);
+
+
+    public void uploadImagesById(Long id, MultipartFile indexImage,
+                             MultipartFile[] images) {
+
+        if(indexImage == null){
+            throw new IllegalArgumentException("The index image must not be null!");
+        }
+        findById(id);
+
+        String extension;
+        String root = env.getProperty("file.media.upload-image");
+        String uploadImagePath = Paths.get(root, id.toString()).toString();
+
+        File dir = new File(uploadImagePath);
+        if(!utilService.createDir(dir)){
+            deleteUploadedImagesById(id);
+            utilService.createDir(dir);
+        }
+
+        extension = FilenameUtils.getExtension(indexImage.getOriginalFilename());
+        String indexImageSavedPath = Paths.get(dir.getPath(),id+"_index."+extension).toString();
+        utilService.saveFile(indexImageSavedPath, indexImage);
+
+        for (int i = 0; i < images.length; i++) {
+            extension = FilenameUtils.getExtension(images[i].getOriginalFilename());
+            String name = id + "_" + i+"."+extension;
+            String imageSavedPath = Paths.get(dir.getPath(),name).toString();
+            utilService.saveFile(imageSavedPath, images[i]);
+        }
     }
 
-    public Page<Film> findByProducer(Pageable pageable,String producer){
-        return filmRepository.findByProducer(pageable,producer);
+    public void deleteUploadedImagesById(Long id){
+        //findById(id);
+        String root = env.getProperty("file.media.upload-image");
+        String uploadImagePath = Paths.get(root, id.toString()).toString();
+        utilService.deleteDirectoryOfUploadedFile(uploadImagePath);
     }
 
-    public Page<MediaShowingPlace> findMediaShowingPlaceByFilmId(Pageable pageable, Long filmId ){
-            return mediaShowingPlaceRepository.findByMediaId(pageable,filmId);
+
+    public void uploadTrailerById(Long id, MultipartFile trailer) {
+        if(trailer == null){
+            throw new IllegalArgumentException("The trailer file must not be null!");
+        }
+        findById(id);
+        String extension = FilenameUtils.getExtension(trailer.getOriginalFilename());
+        String root = env.getProperty("file.media.upload-trailer");
+        String uploadedTrailerPath = Paths.get(root,id.toString()).toString();
+        File dir = new File(uploadedTrailerPath);
+        if(!utilService.createDir(dir)){
+            deleteUploadedTrailerById(id);
+            utilService.createDir(dir);
+        }
+        String trailerSavedPath = Paths.get(dir.getPath(), id+"_trailer."+extension).toString();
+        utilService.saveFile(trailerSavedPath, trailer);
     }
 
-    public Page<MediaShowingPlace> findMediaShowingPlaceByPlaceId(Pageable pageable, Long placeId ){
-        return mediaShowingPlaceRepository.findByPlaceId(pageable,placeId);
+    public void deleteUploadedTrailerById(Long id) {
+        //findById(id);
+        String root = env.getProperty("file.media.upload-trailer");
+        String uploadedTrailerPath = Paths.get(root,id.toString()).toString();
+        utilService.deleteDirectoryOfUploadedFile(uploadedTrailerPath);
+
     }
 
-    public void rateById( Long id, Double rate ){
 
-    }
 }

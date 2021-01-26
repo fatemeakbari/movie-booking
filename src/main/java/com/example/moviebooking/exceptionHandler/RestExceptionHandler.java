@@ -1,10 +1,12 @@
 package com.example.moviebooking.exceptionHandler;
 
+import io.jsonwebtoken.JwtException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
@@ -16,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -30,6 +33,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                                                                WebRequest request) {
         return super.handleMissingPathVariable(ex, headers, status, request);
     }
+
 
 
     @ExceptionHandler(EntityNotFoundException.class)
@@ -85,4 +89,33 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    protected ResponseEntity<Object> handleDataIntegrityViolationException(IllegalArgumentException ex
+            ,WebRequest request){
+
+        ApiExceptionResponse response = new ApiExceptionResponse();
+        response.setMessage("Invalid input");
+        response.setDetails(Arrays.asList(ex.getMessage()));
+        response.setHttpStatus(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(response, response.getHttpStatus());
+    }
+
+    @ExceptionHandler(JwtException.class)
+    protected ResponseEntity<Object> handleRuntimeException(RuntimeException ex,WebRequest request){
+        ApiExceptionResponse response = new ApiExceptionResponse();
+        response.setMessage(ex.getMessage());
+        response.setHttpStatus(HttpStatus.UNAUTHORIZED);
+        response.setDetails(Collections.singletonList(ex.getCause().toString()));
+        return new ResponseEntity(response,response.getHttpStatus());
+    }
+
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
+                                                                  HttpHeaders headers,
+                                                                  HttpStatus status,
+                                                                  WebRequest request) {
+        return super.handleHttpMessageNotReadable(ex, headers, status, request);
+    }
 }
